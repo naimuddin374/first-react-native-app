@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList } from 'react-native';
 import PlaceItem from './src/components/Place/PlaceItem'
 import AddNewPlace from './src/components/Place/AddNewPlace'
 
@@ -20,18 +20,21 @@ export default class App extends Component {
     }
     this.setState(prevState => {
       return {
-        places: prevState.places.concat(prevState.placeName)
+        places: prevState.places.concat({
+          key: Math.random().toString(),
+          value: prevState.placeName
+        })
       }
     })
     this.setState({
       placeName: ""
     })
   }
-  removePlaceItem = index => {
+  removePlaceItem = key => {
     this.setState(prevState => {
       return {
-        places: prevState.places.filter((place, i) => {
-          return index !== i
+        places: prevState.places.filter(place => {
+          return key !== place.key
         })
       }
     })
@@ -45,15 +48,17 @@ export default class App extends Component {
           changeHandler={this.changeHandler}
           submitHandler={this.submitHandler}
         />
-        <ScrollView style={styles.listContainer}>
-          {
-            this.state.places.map((place, i) => (<PlaceItem
-              key={i}
-              placeName={place}
-              onItemPressed={() => this.removePlaceItem(i)}
-            />))
-          }
-        </ScrollView>
+        <FlatList
+          data={this.state.places}
+          style={styles.listContainer}
+          renderItem={(info) => (
+            <PlaceItem
+              key={info.item.key}
+              placeName={info.item.value}
+              onItemPressed={() => this.removePlaceItem(info.item.key)}
+            />
+          )}
+        />
       </View>
     );
   }
