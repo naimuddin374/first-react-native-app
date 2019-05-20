@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import { StyleSheet, Text, View, FlatList } from 'react-native';
 import PlaceItem from './src/components/Place/PlaceItem'
 import AddNewPlace from './src/components/Place/AddNewPlace'
+import PlaceDetail from './src/components/Place/PlaceDetails'
 
 
 export default class App extends Component {
   state = {
     placeName: "",
-    places: []
+    places: [],
+    selectedPlace: null
   }
   changeHandler = value => {
     this.setState({
@@ -22,20 +24,36 @@ export default class App extends Component {
       return {
         places: prevState.places.concat({
           key: Math.random().toString(),
-          value: prevState.placeName
+          name: prevState.placeName,
+          image: {
+            uri: "https://c1.staticflickr.com/5/4096/4744241983_34023bf303_b.jpg"
+          }
+        }),
+        placeName: ""
+      }
+    })
+  }
+  onItemPressed = key => {
+    this.setState(prevState => {
+      return {
+        selectedPlace: prevState.places.find(place => {
+          return key === place.key
         })
       }
     })
+  }
+  modalCloseHandler = () => {
     this.setState({
-      placeName: ""
+      selectedPlace: null
     })
   }
-  removePlaceItem = key => {
+  placeDeleteHandler = () => {
     this.setState(prevState => {
       return {
         places: prevState.places.filter(place => {
-          return key !== place.key
-        })
+          return prevState.selectedPlace.key !== place.key
+        }),
+        selectedPlace: null
       }
     })
   }
@@ -48,14 +66,20 @@ export default class App extends Component {
           changeHandler={this.changeHandler}
           submitHandler={this.submitHandler}
         />
+        <PlaceDetail
+          selectedItem={this.state.selectedPlace}
+          onModalClose={this.modalCloseHandler}
+          onItemRemove={this.placeDeleteHandler}
+        />
         <FlatList
           data={this.state.places}
           style={styles.listContainer}
           renderItem={(info) => (
             <PlaceItem
               key={info.item.key}
-              placeName={info.item.value}
-              onItemPressed={() => this.removePlaceItem(info.item.key)}
+              placeName={info.item.name}
+              placeImage={info.item.image}
+              onItemSelected={() => this.onItemPressed(info.item.key)}
             />
           )}
         />
